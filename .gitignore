@@ -1,0 +1,20 @@
+# Виртуальное окружение
+venv/
+env/
+.venv/
+
+# Python кеш
+__pycache__/
+*.pyc
+
+# Секреты и данные (НИКОГДА не заливаем на GitHub!)
+.env
+data/
+logs/
+
+# IDE и система
+.idea/
+.vscode/
+*.code-workspace
+.DS_Store
+Thumbs.db
