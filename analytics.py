@@ -67,3 +67,10 @@ def get_level_emoji(level):
     elif level == 4:
         return "😱"
     return ""
+
+def calculate_sma(klines, period=200):
+    """Рассчитывает SMA за period свечей по close"""
+    if len(klines) < period:
+        return 0.0
+    closes = [float(k[4]) for k in klines[-period:]]
+    return np.mean(closes)
