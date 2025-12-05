@@ -1,4 +1,4 @@
-# ITraderbot 
+# Itraderbot 
 
 Telegram-бот, для мониторинга активности на рынке. 
 
