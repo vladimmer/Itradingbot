@@ -65,13 +65,21 @@ async def add_symbol_callback(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.message.reply_text("Хотите получать топ-3 волатильных монет (15:00-21:00 МСК)?", reply_markup=reply_markup)
 
-async def top_toggle_callback(update, context):
-    query = update.callback_query
-    chat_id = query.message.chat_id
-    value = query.data.split('_')[1] == 'on'
-    update_user_data(chat_id, {"top_volatile": value})
-    await query.answer(f"Топ-3 {'включён' if value else 'выключен'}")
-    await query.message.reply_text("Настройки сохранены! Используй /help для команд.")
+async def top_toggle(update, context):
+    chat_id = update.effective_chat.id
+    try:
+        arg = context.args[0].lower()
+    except IndexError:
+        await update.message.reply_text("Укажи: /top on или /top off")
+        return
+
+    if arg not in ["on", "off"]:
+        await update.message.reply_text("Используй: /top on или /top off")
+        return
+
+    value = arg == "on"
+    update_user_data(chat_id, {"top_volatile": value})  # сохраняем булево
+    await update.message.reply_text(f"Топ-3 {'включён' if value else 'выключен'}")
 
 async def add_symbol(update, context):
     chat_id = update.effective_chat.id
@@ -159,7 +167,11 @@ async def recalc(update, context):
     await update.message.reply_text("Пороги пересчитаны (заглушка)")
 
 def main():
-    application = Application.builder().token(TELEGRAM_TOKEN).build()
+    application = Application.builder().token(TELEGRAM_TOKEN) \
+        .concurrent_updates(True) \
+        .connection_pool_size(100) \
+        .pool_timeout(90.0) \
+        .build()
 
     # Хендлеры команд
     application.add_handler(CommandHandler("start", start))
@@ -174,7 +186,6 @@ def main():
     # Кнопки
     application.add_handler(CallbackQueryHandler(mode_callback, pattern='^mode_'))
     application.add_handler(CallbackQueryHandler(add_symbol_callback, pattern='^add_'))
-    application.add_handler(CallbackQueryHandler(top_toggle_callback, pattern='^top_'))
 
     # Кастом /add<symbol>
     application.add_handler(MessageHandler(filters.Regex(r'^/add\w+$'), add_symbol))
